@@ -42,27 +42,57 @@ squad-projects status      # Cross-project overview
 squad-projects list        # List all projects
 ```
 
-## Configuration
+## Configuration (v2)
 
-Projects are stored in `.squad/projects.json`:
+Projects are stored in `.squad/projects.json` using the v2 flat-array format:
 
 ```json
 {
-  "version": "1.0.0",
-  "projects": {
-    "my-project": {
-      "description": "My awesome project",
-      "repos": [
-        { "owner": "myorg", "repo": "my-app", "role": "source" },
-        { "owner": "myorg", "repo": "my-docs", "role": "content" }
-      ],
-      "labels": ["my-project"],
-      "focus": "Building v2 features"
-    }
+  "version": "2.0",
+  "github_accounts": {
+    "personal": "myuser",
+    "emu": "myuser_microsoft"
   },
-  "activeProject": null
+  "repos": [
+    {
+      "repo": "myorg/my-app",
+      "project": "my-project",
+      "description": "My awesome app",
+      "auth": "personal",
+      "tracking": "managed",
+      "swept": true,
+      "tags": ["source"],
+      "owners": [
+        {
+          "agent": "casey",
+          "scope": { "type": "all", "artifacts": ["issues", "prs"] },
+          "primary": true,
+          "concern": "content-delivery"
+        }
+      ]
+    },
+    {
+      "repo": "myorg/my-docs",
+      "project": "my-project",
+      "description": "Documentation",
+      "auth": "emu",
+      "tracking": "read-only",
+      "swept": false,
+      "tags": ["content"]
+    }
+  ],
+  "activeProject": "my-project"
 }
 ```
+
+Key features of v2:
+- **Flat repos array** — projects are derived from the `project` field on each repo
+- **`github_accounts`** — maps auth shorthand (personal/emu) to GitHub usernames
+- **`repo`** — slash-separated `"owner/repo"` identifier
+- **`tags`** — replaces v1 `role` and `labels` fields
+- **`owners`** — agent routing info (agent name, scope, concern)
+- **`tracking`** — `"managed"` or `"read-only"` (whether tools write to this repo)
+- **`swept`** — whether the repo is included in sweep operations
 
 ## Integration with squad-identity
 

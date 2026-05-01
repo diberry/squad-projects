@@ -47,34 +47,45 @@ squad-projects follows the [sabbour companion extension pattern](https://sabbour
 extensions/squad-projects/
 ├── extension.mjs        # Entry point — tool registration
 └── lib/
+    ├── config.mjs       # Shared config helper (loadConfig, saveConfig, helpers)
     ├── list.mjs         # List all projects
     ├── route.mjs        # Route query → project
     ├── focus.mjs        # Get/set active project
     ├── ralph-dispatch.mjs # Cross-repo issue scan
     ├── status.mjs       # Cross-project status
-    ├── init.mjs         # Initialize projects.json
+    ├── init.mjs         # Initialize projects.json (handles v1 + v2 input)
     ├── doctor.mjs       # Health checks
     └── add-repo.mjs     # Add repo to project
 ```
 
-## State Format
+## State Format (v2)
 
 All state lives in `.squad/projects.json`. No database, no external dependencies.
 
 ```jsonc
 {
-  "version": "1.0.0",       // Schema version for migrations
-  "projects": {             // Map of project-name → config
-    "my-project": {
-      "description": "",    // Human-readable summary
-      "repos": [],          // Array of {owner, repo, role}
-      "labels": [],         // Routing keywords
-      "focus": null         // Current work focus (free text)
-    }
+  "version": "2.0",                // Schema version
+  "github_accounts": {             // Auth shorthand → GitHub username
+    "personal": "myuser",
+    "emu": "myuser_microsoft"
   },
-  "activeProject": null     // Session-scoped active project
+  "repos": [                       // Flat array of all repos
+    {
+      "repo": "owner/repo-name",   // Slash-separated identifier
+      "project": "project-name",   // Which project this repo belongs to
+      "description": "",           // Human-readable summary
+      "auth": "personal",          // Which github_accounts key to use
+      "tracking": "managed",       // "managed" or "read-only"
+      "swept": true,               // Included in sweep operations?
+      "tags": ["source"],          // Routing keywords (replaces v1 role/labels)
+      "owners": [...]              // Optional agent routing
+    }
+  ],
+  "activeProject": null            // Session-scoped active project
 }
 ```
+
+Projects are **derived** from the `project` field on each repo — there is no separate projects object.
 
 ## CLI vs Extension
 

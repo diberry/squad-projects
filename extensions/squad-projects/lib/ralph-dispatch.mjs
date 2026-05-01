@@ -1,31 +1,29 @@
 /**
- * Cross-repo Ralph dispatch — scan issues across all repos in a project.
+ * Cross-repo Ralph dispatch — scan issues across all repos in a project (v2 format).
  */
-import { readFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { loadConfig, getProjectRepos, listProjectNames } from './config.mjs';
 
 const execFileAsync = promisify(execFile);
 
 export async function ralphDispatch(repoRoot, projectName, labels) {
-  const configPath = join(repoRoot, '.squad', 'projects.json');
-  if (!existsSync(configPath)) {
-    return { error: 'No .squad/projects.json found. Run squad_projects_init first.' };
-  }
+  const result = loadConfig(repoRoot);
+  if (result.error) return result;
 
-  const config = JSON.parse(readFileSync(configPath, 'utf-8'));
-  const project = config.projects[projectName];
+  const { config } = result;
+  const repos = getProjectRepos(config, projectName);
 
-  if (!project) {
-    return { error: `Project "${projectName}" not found.`, available: Object.keys(config.projects) };
+  if (repos.length === 0) {
+    return { error: `Project "${projectName}" not found or has no repos.`, available: listProjectNames(config) };
   }
 
   const allIssues = [];
 
-  for (const repo of project.repos) {
+  for (const entry of repos) {
+    const repoId = entry.repo;
     try {
-      const args = ['issue', 'list', '-R', `${repo.owner}/${repo.repo}`,
+      const args = ['issue', 'list', '-R', repoId,
         '--state', 'open', '--json', 'number,title,labels,assignees,createdAt',
         '--limit', '20'];
 
@@ -37,9 +35,9 @@ export async function ralphDispatch(repoRoot, projectName, labels) {
 
       const { stdout } = await execFileAsync('gh', args);
       const issues = JSON.parse(stdout || '[]');
-      allIssues.push(...issues.map(i => ({ ...i, repo: `${repo.owner}/${repo.repo}` })));
+      allIssues.push(...issues.map(i => ({ ...i, repo: repoId })));
     } catch (err) {
-      allIssues.push({ repo: `${repo.owner}/${repo.repo}`, error: err.message });
+      allIssues.push({ repo: repoId, error: err.message });
     }
   }
 
@@ -47,6 +45,6 @@ export async function ralphDispatch(repoRoot, projectName, labels) {
     project: projectName,
     totalIssues: allIssues.filter(i => !i.error).length,
     issues: allIssues,
-    scannedRepos: project.repos.map(r => `${r.owner}/${r.repo}`),
+    scannedRepos: repos.map(r => r.repo),
   };
 }

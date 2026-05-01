@@ -1,35 +1,36 @@
 /**
- * Route a query to the correct project based on repo names, labels, or keywords.
+ * Route a query to the correct project based on repo names, tags, or keywords (v2 format).
  */
-import { readFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { loadConfig, listProjectNames, getProjectRepos, parseRepoId } from './config.mjs';
 
 export function routeToProject(repoRoot, query) {
-  const configPath = join(repoRoot, '.squad', 'projects.json');
-  if (!existsSync(configPath)) {
-    return { error: 'No .squad/projects.json found. Run squad_projects_init first.' };
-  }
+  const result = loadConfig(repoRoot);
+  if (result.error) return result;
 
-  const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+  const { config } = result;
   const queryLower = query.toLowerCase();
 
-  for (const [name, data] of Object.entries(config.projects)) {
-    // Match by project name
+  // Match by project name
+  const projectNames = listProjectNames(config);
+  for (const name of projectNames) {
     if (name.toLowerCase() === queryLower) {
-      return { project: name, matchType: 'project-name', data };
+      return { project: name, matchType: 'project-name', repos: getProjectRepos(config, name) };
     }
+  }
 
-    // Match by repo name
-    for (const repo of data.repos) {
-      if (repo.repo.toLowerCase() === queryLower ||
-          `${repo.owner}/${repo.repo}`.toLowerCase() === queryLower) {
-        return { project: name, matchType: 'repo', matchedRepo: `${repo.owner}/${repo.repo}`, data };
-      }
+  // Match by repo identifier
+  for (const entry of config.repos || []) {
+    const { owner, repo } = parseRepoId(entry.repo);
+    if (repo.toLowerCase() === queryLower ||
+        entry.repo.toLowerCase() === queryLower) {
+      return { project: entry.project, matchType: 'repo', matchedRepo: entry.repo };
     }
+  }
 
-    // Match by label
-    if (data.labels && data.labels.some(l => l.toLowerCase() === queryLower)) {
-      return { project: name, matchType: 'label', data };
+  // Match by tag
+  for (const entry of config.repos || []) {
+    if (entry.tags && entry.tags.some(t => t.toLowerCase() === queryLower)) {
+      return { project: entry.project, matchType: 'tag', matchedRepo: entry.repo };
     }
   }
 

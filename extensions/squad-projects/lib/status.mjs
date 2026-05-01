@@ -1,34 +1,31 @@
 /**
- * Cross-project status overview.
+ * Cross-project status overview (v2 format).
  */
-import { readFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { loadConfig, listProjectNames, getProjectRepos } from './config.mjs';
 
 const execFileAsync = promisify(execFile);
 
 export async function getStatus(repoRoot, projectFilter) {
-  const configPath = join(repoRoot, '.squad', 'projects.json');
-  if (!existsSync(configPath)) {
-    return { error: 'No .squad/projects.json found. Run squad_projects_init first.' };
-  }
+  const result = loadConfig(repoRoot);
+  if (result.error) return result;
 
-  const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+  const { config } = result;
   const projectNames = projectFilter
     ? [projectFilter]
-    : Object.keys(config.projects);
+    : listProjectNames(config);
 
   const results = {};
 
   for (const name of projectNames) {
-    const project = config.projects[name];
-    if (!project) continue;
+    const repos = getProjectRepos(config, name);
+    if (repos.length === 0) continue;
 
     const status = { repos: [] };
 
-    for (const repo of project.repos) {
-      const repoId = `${repo.owner}/${repo.repo}`;
+    for (const entry of repos) {
+      const repoId = entry.repo;
       try {
         const { stdout: issueOut } = await execFileAsync('gh', [
           'issue', 'list', '-R', repoId, '--state', 'open',

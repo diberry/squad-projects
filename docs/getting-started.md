@@ -24,7 +24,9 @@ npx squad-projects setup
 
 This does two things:
 1. Copies the Copilot CLI extension to `.github/extensions/squad-projects/`
-2. Creates `.squad/projects.json` from your existing `repos.json` (if present)
+2. Creates `.squad/projects.json` (v2 format) from your existing `repos.json` (if present)
+
+The init process handles both v1 and v2 input formats automatically.
 
 ### 3. Verify
 
@@ -61,27 +63,52 @@ Once installed, the tools are available in any Copilot CLI session:
   → Result: 5 open issues across 2 repos
 ```
 
-## Configuration
+## Configuration (v2)
 
-### Project Roles
+### Repo Fields
 
-Each repo in a project has a `role`:
+Each repo entry in the flat `repos` array has these fields:
 
-| Role | Meaning |
-|------|---------|
-| `source` | Code repository (issues tracked here) |
+| Field | Required | Description |
+|-------|----------|-------------|
+| `repo` | ✓ | `"owner/repo"` identifier |
+| `project` | ✓ | Project this repo belongs to |
+| `description` | | Human-readable summary |
+| `auth` | | Auth shorthand (`"personal"` or `"emu"`) |
+| `tracking` | | `"managed"` (tools write) or `"read-only"` |
+| `swept` | | Whether included in sweep operations |
+| `tags` | | Array of routing keywords (replaces v1 `role`) |
+| `owners` | | Agent routing info |
+
+### Tags
+
+Tags replace v1 `role` and `labels`. Common tags:
+
+| Tag | Meaning |
+|-----|---------|
+| `source` | Code repository |
 | `content` | Documentation/content repo |
-| `docs` | Published documentation |
 | `fork` | Your fork of an upstream repo |
-| `config` | Configuration or infrastructure |
+| `samples` | Sample code |
 
-### Labels
+### Owners (Agent Routing)
 
-Project labels help with routing. When someone mentions "azure" or "mcp", the router checks labels to find the right project.
+The `owners` array routes work to specific agents:
 
-### Focus
+```json
+"owners": [
+  {
+    "agent": "casey",
+    "scope": { "type": "all", "artifacts": ["issues", "prs"] },
+    "primary": true,
+    "concern": "content-delivery"
+  }
+]
+```
 
-The `focus` field is a free-text string describing what the team is currently working on for that project. It helps agents understand context without reading all issues.
+## Migration from v1
+
+If you have an existing v1 `.squad/projects.json`, delete it and re-run `squad_projects_init`. The init process will convert v1 formats (including the old `{ projects: { ... } }` structure) into the v2 flat array format.
 
 ## Next Steps
 

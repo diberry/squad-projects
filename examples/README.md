@@ -1,15 +1,17 @@
 # Examples
 
-## projects.json
+## projects.json (v2)
 
-A realistic multi-project configuration showing:
-- Multiple projects with different repo roles
-- Labels for routing
-- Focus field for current work context
+The current v2 project configuration format showing:
+- Flat repos array with `project` field for grouping
+- `github_accounts` for auth shorthand mapping
+- `tags` for routing (replaces v1 `labels`)
+- `owners` for agent routing
+- `auth`, `tracking`, `swept` fields
 
 Copy to `.squad/projects.json` and customize for your repos.
 
-## repos.json
+## legacy-repos.json (v1)
 
-A flat repo list format that `squad_projects_init` can import.
-If you already have a `repos.json` at your repo root, `npx squad-projects setup` will auto-import it.
+The legacy v1 flat repo list format. `squad_projects_init` can still import this
+format and auto-convert to v2. Kept for backward compatibility reference.

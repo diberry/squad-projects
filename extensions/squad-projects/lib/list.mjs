@@ -1,22 +1,23 @@
 /**
- * List all projects from .squad/projects.json
+ * List all projects from .squad/projects.json (v2 format)
  */
-import { readFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { loadConfig, listProjectNames, getProjectRepos } from './config.mjs';
 
 export function listProjects(repoRoot) {
-  const configPath = join(repoRoot, '.squad', 'projects.json');
-  if (!existsSync(configPath)) {
-    return { error: 'No .squad/projects.json found. Run squad_projects_init first.' };
-  }
+  const result = loadConfig(repoRoot);
+  if (result.error) return result;
 
-  const config = JSON.parse(readFileSync(configPath, 'utf-8'));
-  const projects = Object.entries(config.projects).map(([name, data]) => ({
-    name,
-    description: data.description,
-    repos: data.repos,
-    focus: data.focus || null,
-  }));
+  const { config } = result;
+  const projectNames = listProjectNames(config);
+
+  const projects = projectNames.map(name => {
+    const repos = getProjectRepos(config, name);
+    return {
+      name,
+      repos: repos.map(r => ({ repo: r.repo, tags: r.tags || [], tracking: r.tracking })),
+      repoCount: repos.length,
+    };
+  });
 
   return {
     activeProject: config.activeProject,

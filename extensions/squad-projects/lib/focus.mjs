@@ -1,27 +1,25 @@
 /**
- * Get or set the active project focus.
+ * Get or set the active project focus (v2 format).
  */
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { loadConfig, saveConfig, listProjectNames } from './config.mjs';
 
 export function manageFocus(repoRoot, project) {
-  const configPath = join(repoRoot, '.squad', 'projects.json');
-  if (!existsSync(configPath)) {
-    return { error: 'No .squad/projects.json found. Run squad_projects_init first.' };
-  }
+  const result = loadConfig(repoRoot);
+  if (result.error) return result;
 
-  const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+  const { config } = result;
 
   if (!project) {
     return { activeProject: config.activeProject || null };
   }
 
-  if (!config.projects[project]) {
-    return { error: `Project "${project}" not found.`, available: Object.keys(config.projects) };
+  const available = listProjectNames(config);
+  if (!available.includes(project)) {
+    return { error: `Project "${project}" not found.`, available };
   }
 
   config.activeProject = project;
-  writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
+  saveConfig(repoRoot, config);
 
   return { activeProject: project, message: `Focus set to "${project}".` };
 }

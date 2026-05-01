@@ -1,34 +1,81 @@
 {
-  "version": "1.0.0",
-  "projects": {
-    "azure-ai-tools": {
-      "description": "Azure MCP server and AI tooling documentation",
-      "repos": [
-        { "owner": "microsoft", "repo": "azure-mcp-server", "role": "source" },
-        { "owner": "MicrosoftDocs", "repo": "azure-dev-docs-pr", "role": "content" },
-        { "owner": "diberry", "repo": "azure-dev-docs-pr", "role": "fork" }
-      ],
-      "labels": ["azure", "mcp", "ai-tools"],
-      "focus": "Azure MCP server content generation"
-    },
-    "data-plus-ai": {
-      "description": "DocumentDB and vector search samples",
-      "repos": [
-        { "owner": "Azure-Samples", "repo": "documentdb-samples", "role": "source" },
-        { "owner": "MicrosoftDocs", "repo": "nosql-docs-pr", "role": "content" }
-      ],
-      "labels": ["documentdb", "nosql", "vector-search"],
-      "focus": "Quickstart articles and samples"
-    },
-    "squad-infra": {
-      "description": "Squad product and extensions development",
-      "repos": [
-        { "owner": "bradygaster", "repo": "squad", "role": "source" },
-        { "owner": "diberry", "repo": "squad-projects", "role": "source" }
-      ],
-      "labels": ["squad", "extensions"],
-      "focus": null
-    }
+  "version": "2.0",
+  "github_accounts": {
+    "personal": "diberry",
+    "emu": "diberry_microsoft"
   },
+  "repos": [
+    {
+      "repo": "microsoft/azure-mcp-server",
+      "project": "azure-ai-tools",
+      "description": "Azure MCP server source",
+      "auth": "personal",
+      "tracking": "read-only",
+      "swept": false,
+      "tags": ["source", "mcp"]
+    },
+    {
+      "repo": "MicrosoftDocs/azure-dev-docs-pr",
+      "project": "azure-ai-tools",
+      "description": "Azure developer docs (internal)",
+      "auth": "emu",
+      "tracking": "managed",
+      "swept": true,
+      "tags": ["content", "docs"],
+      "owners": [
+        {
+          "agent": "casey",
+          "scope": { "type": "all", "artifacts": ["issues", "prs"] },
+          "primary": true,
+          "concern": "content-delivery"
+        }
+      ]
+    },
+    {
+      "repo": "diberry/azure-dev-docs-pr",
+      "project": "azure-ai-tools",
+      "description": "Fork for PRs",
+      "auth": "personal",
+      "tracking": "read-only",
+      "swept": false,
+      "tags": ["fork"]
+    },
+    {
+      "repo": "Azure-Samples/documentdb-samples",
+      "project": "data-plus-ai",
+      "description": "DocumentDB quickstart samples",
+      "auth": "personal",
+      "tracking": "managed",
+      "swept": true,
+      "tags": ["source", "samples"]
+    },
+    {
+      "repo": "MicrosoftDocs/nosql-docs-pr",
+      "project": "data-plus-ai",
+      "description": "NoSQL documentation",
+      "auth": "emu",
+      "tracking": "managed",
+      "swept": true,
+      "tags": ["content"]
+    },
+    {
+      "repo": "bradygaster/squad",
+      "project": "squad-infra",
+      "description": "Squad CLI core",
+      "auth": "personal",
+      "tracking": "read-only",
+      "swept": false,
+      "tags": ["source"]
+    },
+    {
+      "repo": "diberry/squad-projects",
+      "project": "squad-infra",
+      "description": "This extension",
+      "auth": "personal",
+      "tracking": "managed",
+      "swept": true,
+      "tags": ["source", "extensions"]
+    }
+  ],
   "activeProject": "azure-ai-tools"
 }

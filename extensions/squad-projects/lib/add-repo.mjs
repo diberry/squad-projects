@@ -1,42 +1,42 @@
 /**
- * Add a repo to a project.
+ * Add a repo to a project (v2 format).
  */
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { loadConfig, saveConfig, getProjectRepos } from './config.mjs';
 
-export function addRepo(repoRoot, { project, owner, repo, role }) {
-  const configPath = join(repoRoot, '.squad', 'projects.json');
-  if (!existsSync(configPath)) {
-    return { error: 'No .squad/projects.json found. Run squad_projects_init first.' };
-  }
+export function addRepo(repoRoot, { project, owner, repo, role, auth, tracking }) {
+  const result = loadConfig(repoRoot);
+  if (result.error) return result;
 
-  const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+  const { config } = result;
 
-  if (!config.projects[project]) {
-    // Create project if it doesn't exist
-    config.projects[project] = {
-      description: '',
-      repos: [],
-      labels: [project],
-      focus: null,
-    };
-  }
+  // Build the "owner/repo" identifier
+  const repoId = `${owner}/${repo}`;
 
   // Check for duplicates
-  const existing = config.projects[project].repos.find(
-    r => r.owner === owner && r.repo === repo
-  );
+  const existing = (config.repos || []).find(r => r.repo === repoId && r.project === project);
   if (existing) {
-    return { warning: `${owner}/${repo} is already registered under "${project}".` };
+    return { warning: `${repoId} is already registered under "${project}".` };
   }
 
-  config.projects[project].repos.push({ owner, repo, role });
-  writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
+  if (!config.repos) config.repos = [];
+
+  const entry = {
+    repo: repoId,
+    project,
+    description: '',
+    auth: auth || 'personal',
+    tracking: tracking || 'read-only',
+    swept: false,
+    tags: role ? [role] : ['source'],
+  };
+
+  config.repos.push(entry);
+  saveConfig(repoRoot, config);
 
   return {
-    added: `${owner}/${repo}`,
+    added: repoId,
     project,
-    role,
-    totalRepos: config.projects[project].repos.length,
+    tags: entry.tags,
+    totalRepos: getProjectRepos(config, project).length,
   };
 }
