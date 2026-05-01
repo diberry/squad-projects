@@ -1,0 +1,5 @@
+[
+  { "owner": "microsoft", "repo": "azure-mcp-server", "role": "source" },
+  { "owner": "MicrosoftDocs", "repo": "azure-dev-docs-pr", "role": "content" },
+  { "owner": "Azure-Samples", "repo": "documentdb-samples", "role": "source" }
+]

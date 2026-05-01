@@ -1,0 +1,34 @@
+{
+  "version": "1.0.0",
+  "projects": {
+    "azure-ai-tools": {
+      "description": "Azure MCP server and AI tooling documentation",
+      "repos": [
+        { "owner": "microsoft", "repo": "azure-mcp-server", "role": "source" },
+        { "owner": "MicrosoftDocs", "repo": "azure-dev-docs-pr", "role": "content" },
+        { "owner": "diberry", "repo": "azure-dev-docs-pr", "role": "fork" }
+      ],
+      "labels": ["azure", "mcp", "ai-tools"],
+      "focus": "Azure MCP server content generation"
+    },
+    "data-plus-ai": {
+      "description": "DocumentDB and vector search samples",
+      "repos": [
+        { "owner": "Azure-Samples", "repo": "documentdb-samples", "role": "source" },
+        { "owner": "MicrosoftDocs", "repo": "nosql-docs-pr", "role": "content" }
+      ],
+      "labels": ["documentdb", "nosql", "vector-search"],
+      "focus": "Quickstart articles and samples"
+    },
+    "squad-infra": {
+      "description": "Squad product and extensions development",
+      "repos": [
+        { "owner": "bradygaster", "repo": "squad", "role": "source" },
+        { "owner": "diberry", "repo": "squad-projects", "role": "source" }
+      ],
+      "labels": ["squad", "extensions"],
+      "focus": null
+    }
+  },
+  "activeProject": "azure-ai-tools"
+}
