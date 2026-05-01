@@ -1,0 +1,41 @@
+{
+  "name": "@diberry/squad-projects",
+  "version": "0.1.0",
+  "description": "Copilot CLI extension for multi-project/multi-repo Squad management. Adds squad_projects_* tools for project routing, cross-repo Ralph dispatch, and work coordination.",
+  "type": "module",
+  "bin": {
+    "squad-projects": "./bin/squad-projects.mjs"
+  },
+  "files": [
+    "bin/",
+    "extensions/",
+    "squad-projects/SKILL.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "optionalDependencies": {
+    "@sabbour/squad-identity": ">=1.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/diberry/squad-projects.git"
+  },
+  "keywords": [
+    "squad",
+    "projects",
+    "copilot",
+    "multi-repo",
+    "orchestration"
+  ]
+}
